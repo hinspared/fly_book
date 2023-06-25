@@ -1,95 +1,61 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client';
+import React from 'react';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import SearchBar from './components/searchbar/SearchBar';
+import flights from './utils/data/mockData.json';
+import { Toaster } from 'react-hot-toast';
+import FlightsList from './components/flightsList/FlightsList';
+import logo from '../../public/logo.png';
+import { Stack } from '@mui/material';
+import Image from 'next/image';
+import ReservationModal from './components/reservationModal/ReservationModal';
+import { useModalStore } from './utils/hooks/useModal';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 export default function Home() {
+  const mobile = useMediaQuery('(max-width:600px)');
+
+  // modal
+  const { open, currentFlight } = useModalStore();
+
+  // autocomplete options
+  const flightsOptions = {
+    from: [...new Set(flights.map((flight) => flight.from))],
+    to: [...new Set(flights.map((flight) => flight.to))],
+  };
+  const [toOptions, setToOptions] = React.useState(flightsOptions.to);
+  const handleFromChange = (value: string | null) => {
+    if (value) {
+      const filteredOptions = flights
+        .filter((flight) => flight.from.includes(value))
+        .map((flight) => flight.to);
+      setToOptions(filteredOptions);
+    } else setToOptions(flightsOptions.to);
+  };
+  const options = {
+    from: flightsOptions.from,
+    to: [...new Set(toOptions)],
+  };
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+    <>
+      <Toaster />
+      <Box mx={mobile ? 2 : 10} mt={3}>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <Image src={logo} width={40} height={40} alt="logo" />
+          <Typography variant="h5">FlyBook</Typography>
+        </Stack>
+        <Typography variant="h3" sx={{ textAlign: 'center' }}>
+          Search cheap flight tickets
+        </Typography>
+        <SearchBar
+          options={options}
+          onChange={handleFromChange}
+          mobile={mobile}
         />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+        <FlightsList mobile={mobile} />
+      </Box>
+      <ReservationModal open={open} flight={currentFlight} />
+    </>
+  );
 }
