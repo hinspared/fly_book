@@ -169,7 +169,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ options, onChange, mobile }) => {
             paddingY: '16px',
           }}
         >
-          Search fligths
+          Search flights
         </Button>
       </Grid>
     </Grid>
